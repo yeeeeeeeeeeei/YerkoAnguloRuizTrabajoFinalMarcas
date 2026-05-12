@@ -1,15 +1,17 @@
 const express = require('express');
 
 const app = express();
-const PORT = 505;
+const PORT = 3000;
 
-// Middleware para que Express entienda JSON en el body
+// Activamos express.json() para que el servidor pueda leer el body de las peticiones en formato JSON
 app.use(express.json());
 
 // ─────────────────────────────────────────────
 // DATOS EN MEMORIA
 // ─────────────────────────────────────────────
 
+// Array con los videojuegos (recurso principal)
+// Cada videojuego tiene 9 campos: id, nombre, genero, plataforma, estudio, fechaLanzamiento, precio, puntuacion y disponible
 const videojuegos = [
   {
     id: 1,
@@ -46,6 +48,8 @@ const videojuegos = [
   }
 ];
 
+// Array con las reseñas (recurso secundario)
+// Cada reseña tiene un campo videojuegoId que la vincula con un videojuego del array anterior
 const reseñas = [
   {
     id: 1,
@@ -77,8 +81,58 @@ const reseñas = [
 // RUTA PRINCIPAL
 // ─────────────────────────────────────────────
 
+// Ruta base para comprobar que el servidor funciona
 app.get('/', (req, res) => {
-  res.send('Servidor funcionando correctamente');
+  res.status(200).send('Servidor funcionando correctamente');
+});
+
+// ─────────────────────────────────────────────
+// ENDPOINTS - VIDEOJUEGOS
+// ─────────────────────────────────────────────
+
+// Obtener todos los videojuegos
+// Método: GET | Ruta: /videojuegos
+app.get('/videojuegos', (req, res) => {
+  try {
+    res.status(200).json(videojuegos);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Obtener un videojuego por su ID usando route param (:id)
+// Método: GET | Ruta: /videojuegos/:id | Ejemplo: /videojuegos/1
+app.get('/videojuegos/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const juego = videojuegos.find(v => v.id === id);
+    if (!juego) {
+      return res.status(404).json({ error: 'Videojuego no encontrado' });
+    }
+    res.status(200).json(juego);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Obtener un videojuego por nombre usando query param
+// Método: GET | Ruta: /videojuegos/buscar/nombre | Ejemplo: /videojuegos/buscar/nombre?nombre=balatro
+app.get('/videojuegos/buscar/nombre', (req, res) => {
+  try {
+    const nombre = req.query.nombre;
+    if (!nombre) {
+      return res.status(400).json({ error: 'Debes indicar un nombre para buscar' });
+    }
+    const juego = videojuegos.find(v =>
+      v.nombre.toLowerCase().includes(nombre.toLowerCase())
+    );
+    if (!juego) {
+      return res.status(404).json({ error: 'Videojuego no encontrado' });
+    }
+    res.status(200).json(juego);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
 
 // ─────────────────────────────────────────────
@@ -86,5 +140,5 @@ app.get('/', (req, res) => {
 // ─────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log('Servidor iniciado en http://localhost:0505');
+  console.log(`Servidor iniciado en http://localhost:${PORT}`);
 });
