@@ -3,15 +3,14 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// Activamos express.json() para que el servidor pueda leer el body de las peticiones en formato JSON
+// Sin esto no podemos leer el body en formato JSON
 app.use(express.json());
 
 // ─────────────────────────────────────────────
 // DATOS EN MEMORIA
 // ─────────────────────────────────────────────
 
-// Array con los videojuegos (recurso principal)
-// Cada videojuego tiene 9 campos: id, nombre, genero, plataforma, estudio, fechaLanzamiento, precio, puntuacion y disponible
+// Lista de videojuegos con sus datos principales
 const videojuegos = [
   {
     id: 1,
@@ -48,8 +47,7 @@ const videojuegos = [
   }
 ];
 
-// Array con las reseñas (recurso secundario)
-// Cada reseña tiene un campo videojuegoId que la vincula con un videojuego del array anterior
+// Reseñas vinculadas a cada videojuego mediante videojuegoId
 const reseñas = [
   {
     id: 1,
@@ -81,7 +79,7 @@ const reseñas = [
 // RUTA PRINCIPAL
 // ─────────────────────────────────────────────
 
-// Ruta base para comprobar que el servidor funciona
+// Para comprobar que el servidor arranca bien
 app.get('/', (req, res) => {
   res.status(200).send('Servidor funcionando correctamente');
 });
@@ -90,8 +88,7 @@ app.get('/', (req, res) => {
 // ENDPOINTS - VIDEOJUEGOS
 // ─────────────────────────────────────────────
 
-// Obtener todos los videojuegos
-// Método: GET | Ruta: /videojuegos
+// Devuelve todos los videojuegos
 app.get('/videojuegos', (req, res) => {
   try {
     res.status(200).json(videojuegos);
@@ -100,10 +97,10 @@ app.get('/videojuegos', (req, res) => {
   }
 });
 
-// Obtener un videojuego por su ID usando route param (:id)
-// Método: GET | Ruta: /videojuegos/:id | Ejemplo: /videojuegos/1
+// Busca un videojuego por su id en la URL, ej: /videojuegos/2
 app.get('/videojuegos/:id', (req, res) => {
   try {
+    // Lo convierto a número porque req.params devuelve texto
     const id = parseInt(req.params.id);
     const juego = videojuegos.find(v => v.id === id);
     if (!juego) {
@@ -115,14 +112,14 @@ app.get('/videojuegos/:id', (req, res) => {
   }
 });
 
-// Obtener un videojuego por nombre usando query param
-// Método: GET | Ruta: /videojuegos/buscar/nombre | Ejemplo: /videojuegos/buscar/nombre?nombre=balatro
+// Busca por nombre con query param, ej: /videojuegos/buscar/nombre?nombre=balatro
 app.get('/videojuegos/buscar/nombre', (req, res) => {
   try {
     const nombre = req.query.nombre;
     if (!nombre) {
       return res.status(400).json({ error: 'Debes indicar un nombre para buscar' });
     }
+    // Con toLowerCase evito que falle si el usuario escribe en mayúsculas
     const juego = videojuegos.find(v =>
       v.nombre.toLowerCase().includes(nombre.toLowerCase())
     );
@@ -139,11 +136,24 @@ app.get('/videojuegos/buscar/nombre', (req, res) => {
 // ENDPOINTS - RESEÑAS
 // ─────────────────────────────────────────────
 
-// Obtener todas las reseñas
-// Método: GET | Ruta: /reseñas
+// Devuelve todas las reseñas
 app.get('/resenas', (req, res) => {
   try {
     res.status(200).json(reseñas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Busca una reseña por su id, ej: /resenas/1
+app.get('/resenas/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const resena = reseñas.find(r => r.id === id);
+    if (!resena) {
+      return res.status(404).json({ error: 'Reseña no encontrada' });
+    }
+    res.status(200).json(resena);
   } catch (error) {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
