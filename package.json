@@ -1,0 +1,24 @@
+{
+  "name": "yerkoanguloruiztrabajofinalmarcas",
+  "version": "1.0.0",
+  "description": "trabajo final de la asignatura lenguaje de marcas en el que se crea una API con Node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeeeeeeeeeeei/YerkoAnguloRuizTrabajoFinalMarcas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/yeeeeeeeeeeei/YerkoAnguloRuizTrabajoFinalMarcas/issues"
+  },
+  "homepage": "https://github.com/yeeeeeeeeeeei/YerkoAnguloRuizTrabajoFinalMarcas#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
