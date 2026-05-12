@@ -180,6 +180,23 @@ app.put('/videojuegos/:id', (req, res) => {
   }
 });
 
+// Elimina un videojuego por su id, ej: DELETE /videojuegos/1
+app.delete('/videojuegos/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const index = videojuegos.findIndex(v => v.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Videojuego no encontrado' });
+    }
+
+    // splice elimina el elemento en la posición encontrada
+    videojuegos.splice(index, 1);
+    res.status(200).json({ mensaje: `Videojuego con id ${id} eliminado correctamente` });
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ─────────────────────────────────────────────
 // ENDPOINTS - RESEÑAS
 // ─────────────────────────────────────────────
