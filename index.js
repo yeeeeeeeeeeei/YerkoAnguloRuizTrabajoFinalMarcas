@@ -159,6 +159,21 @@ app.get('/resenas/:id', (req, res) => {
   }
 });
 
+// Devuelve todas las reseñas de un videojuego concreto, ej: /resenas/videojuego/1
+app.get('/resenas/videojuego/:videojuegoId', (req, res) => {
+  try {
+    const videojuegoId = parseInt(req.params.videojuegoId);
+    // filter devuelve todos los elementos que cumplan la condición, no solo el primero
+    const resenasFiltradas = reseñas.filter(r => r.videojuegoId === videojuegoId);
+    if (resenasFiltradas.length === 0) {
+      return res.status(404).json({ error: 'No se encontraron reseñas para ese videojuego' });
+    }
+    res.status(200).json(resenasFiltradas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ─────────────────────────────────────────────
 // ARRANQUE DEL SERVIDOR
 // ─────────────────────────────────────────────
