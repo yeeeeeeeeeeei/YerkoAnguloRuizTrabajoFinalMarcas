@@ -132,6 +132,54 @@ app.get('/videojuegos/buscar/nombre', (req, res) => {
   }
 });
 
+// Añade un nuevo videojuego enviando los datos en el body (JSON)
+app.post('/videojuegos', (req, res) => {
+  try {
+    const { nombre, genero, plataforma, estudio, fechaLanzamiento, precio, puntuacion, disponible } = req.body;
+
+    // Compruebo que los campos obligatorios estén presentes
+    if (!nombre || !genero || !plataforma || !estudio) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios: nombre, genero, plataforma y estudio' });
+    }
+
+    // El id se genera automáticamente sumando 1 al último id del array
+    const nuevoJuego = {
+      id: videojuegos[videojuegos.length - 1].id + 1,
+      nombre,
+      genero,
+      plataforma,
+      estudio,
+      fechaLanzamiento: fechaLanzamiento || null,
+      precio: precio || null,
+      puntuacion: puntuacion || null,
+      disponible: disponible !== undefined ? disponible : true
+    };
+
+    videojuegos.push(nuevoJuego);
+    res.status(201).json(nuevoJuego);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Modifica un videojuego existente por su id, ej: PUT /videojuegos/1
+app.put('/videojuegos/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    // Busco la posición del juego en el array
+    const index = videojuegos.findIndex(v => v.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Videojuego no encontrado' });
+    }
+
+    // Mezclo los datos actuales con los nuevos que llegan en el body
+    videojuegos[index] = { ...videojuegos[index], ...req.body };
+    res.status(200).json(videojuegos[index]);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ─────────────────────────────────────────────
 // ENDPOINTS - RESEÑAS
 // ─────────────────────────────────────────────
