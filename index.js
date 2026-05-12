@@ -136,6 +136,20 @@ app.get('/videojuegos/buscar/nombre', (req, res) => {
 });
 
 // ─────────────────────────────────────────────
+// ENDPOINTS - RESEÑAS
+// ─────────────────────────────────────────────
+
+// Obtener todas las reseñas
+// Método: GET | Ruta: /reseñas
+app.get('/resenas', (req, res) => {
+  try {
+    res.status(200).json(reseñas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ─────────────────────────────────────────────
 // ARRANQUE DEL SERVIDOR
 // ─────────────────────────────────────────────
 
