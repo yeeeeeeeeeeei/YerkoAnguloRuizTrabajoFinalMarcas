@@ -3,14 +3,12 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// Sin esto no podemos leer el body en formato JSON
 app.use(express.json());
 
 // ─────────────────────────────────────────────
 // DATOS EN MEMORIA
 // ─────────────────────────────────────────────
 
-// Lista de videojuegos con sus datos principales
 const videojuegos = [
   {
     id: 1,
@@ -18,7 +16,7 @@ const videojuegos = [
     genero: 'Aventura / Sigilo',
     plataforma: 'PS5',
     estudio: 'Ubisoft',
-    fechaLanzamiento: '2025-03-20',
+    fechaLanzamiento: '20-03-2025',
     precio: 79.99,
     puntuacion: 8.5,
     disponible: true
@@ -29,7 +27,7 @@ const videojuegos = [
     genero: 'Cartas / Roguelike',
     plataforma: 'PC',
     estudio: 'LocalThunk',
-    fechaLanzamiento: '2024-02-20',
+    fechaLanzamiento: '20-02-2024',
     precio: 14.99,
     puntuacion: 9.5,
     disponible: true
@@ -40,14 +38,13 @@ const videojuegos = [
     genero: 'Survival Horror',
     plataforma: 'PS5',
     estudio: 'Capcom',
-    fechaLanzamiento: '2026-02-27',
+    fechaLanzamiento: '27-02-2026',
     precio: 79.99,
     puntuacion: 9,
     disponible: true
   }
 ];
 
-// Reseñas vinculadas a cada videojuego mediante videojuegoId
 const reseñas = [
   {
     id: 1,
@@ -55,7 +52,7 @@ const reseñas = [
     autor: 'Fran',
     comentario: 'Me enganché desde el primer momento. El sigilo y la historia son brutales.',
     nota: 9,
-    fecha: '2025-04-10'
+    fecha: '10-04-2025'
   },
   {
     id: 2,
@@ -63,7 +60,7 @@ const reseñas = [
     autor: 'Javi',
     comentario: 'No puedo parar de jugar. Es muy adictivo para echar partidas cortas.',
     nota: 10,
-    fecha: '2025-06-22'
+    fecha: '22-06-2025'
   },
   {
     id: 3,
@@ -71,7 +68,7 @@ const reseñas = [
     autor: 'Adrián',
     comentario: 'El mejor survival horror en años. Capcom lo ha vuelto a hacer.',
     nota: 9,
-    fecha: '2026-03-05'
+    fecha: '05-03-2026'
   }
 ];
 
@@ -79,7 +76,6 @@ const reseñas = [
 // RUTA PRINCIPAL
 // ─────────────────────────────────────────────
 
-// Para comprobar que el servidor arranca bien
 app.get('/', (req, res) => {
   res.status(200).send('Servidor funcionando correctamente');
 });
@@ -88,7 +84,7 @@ app.get('/', (req, res) => {
 // ENDPOINTS - VIDEOJUEGOS
 // ─────────────────────────────────────────────
 
-// Devuelve todos los videojuegos
+// GET /videojuegos → devuelve todos
 app.get('/videojuegos', (req, res) => {
   try {
     res.status(200).json(videojuegos);
@@ -97,10 +93,10 @@ app.get('/videojuegos', (req, res) => {
   }
 });
 
-// Busca un videojuego por su id en la URL, ej: /videojuegos/2
+// GET /videojuegos/:id → devuelve uno por id
+// parseInt porque req.params devuelve string
 app.get('/videojuegos/:id', (req, res) => {
   try {
-    // Lo convierto a número porque req.params devuelve texto
     const id = parseInt(req.params.id);
     const juego = videojuegos.find(v => v.id === id);
     if (!juego) {
@@ -112,14 +108,14 @@ app.get('/videojuegos/:id', (req, res) => {
   }
 });
 
-// Busca por nombre con query param, ej: /videojuegos/buscar/nombre?nombre=balatro
+// GET /videojuegos/buscar/nombre?nombre=... → búsqueda parcial por nombre
+// Va antes que /:id para que Express no confunda "buscar" con un id
 app.get('/videojuegos/buscar/nombre', (req, res) => {
   try {
     const nombre = req.query.nombre;
     if (!nombre) {
       return res.status(400).json({ error: 'Debes indicar un nombre para buscar' });
     }
-    // Con toLowerCase evito que falle si el usuario escribe en mayúsculas
     const juego = videojuegos.find(v =>
       v.nombre.toLowerCase().includes(nombre.toLowerCase())
     );
@@ -132,17 +128,16 @@ app.get('/videojuegos/buscar/nombre', (req, res) => {
   }
 });
 
-// Añade un nuevo videojuego enviando los datos en el body (JSON)
+// POST /videojuegos → añade un videojuego nuevo
+// nombre, genero, plataforma y estudio son obligatorios
 app.post('/videojuegos', (req, res) => {
   try {
     const { nombre, genero, plataforma, estudio, fechaLanzamiento, precio, puntuacion, disponible } = req.body;
 
-    // Compruebo que los campos obligatorios estén presentes
     if (!nombre || !genero || !plataforma || !estudio) {
       return res.status(400).json({ error: 'Faltan campos obligatorios: nombre, genero, plataforma y estudio' });
     }
 
-    // El id se genera automáticamente sumando 1 al último id del array
     const nuevoJuego = {
       id: videojuegos[videojuegos.length - 1].id + 1,
       nombre,
@@ -162,17 +157,14 @@ app.post('/videojuegos', (req, res) => {
   }
 });
 
-// Modifica un videojuego existente por su id, ej: PUT /videojuegos/1
+// PUT /videojuegos/:id → actualiza los campos que lleguen en el body
 app.put('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    // Busco la posición del juego en el array
     const index = videojuegos.findIndex(v => v.id === id);
     if (index === -1) {
       return res.status(404).json({ error: 'Videojuego no encontrado' });
     }
-
-    // Mezclo los datos actuales con los nuevos que llegan en el body
     videojuegos[index] = { ...videojuegos[index], ...req.body };
     res.status(200).json(videojuegos[index]);
   } catch (error) {
@@ -180,7 +172,7 @@ app.put('/videojuegos/:id', (req, res) => {
   }
 });
 
-// Elimina un videojuego por su id, ej: DELETE /videojuegos/1
+// DELETE /videojuegos/:id → elimina el videojuego del array
 app.delete('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -188,8 +180,6 @@ app.delete('/videojuegos/:id', (req, res) => {
     if (index === -1) {
       return res.status(404).json({ error: 'Videojuego no encontrado' });
     }
-
-    // splice elimina el elemento en la posición encontrada
     videojuegos.splice(index, 1);
     res.status(200).json({ mensaje: `Videojuego con id ${id} eliminado correctamente` });
   } catch (error) {
@@ -201,7 +191,7 @@ app.delete('/videojuegos/:id', (req, res) => {
 // ENDPOINTS - RESEÑAS
 // ─────────────────────────────────────────────
 
-// Devuelve todas las reseñas
+// GET /resenas → devuelve todas
 app.get('/resenas', (req, res) => {
   try {
     res.status(200).json(reseñas);
@@ -210,7 +200,7 @@ app.get('/resenas', (req, res) => {
   }
 });
 
-// Busca una reseña por su id, ej: /resenas/1
+// GET /resenas/:id → devuelve una por id
 app.get('/resenas/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -224,16 +214,61 @@ app.get('/resenas/:id', (req, res) => {
   }
 });
 
-// Devuelve todas las reseñas de un videojuego concreto, ej: /resenas/videojuego/1
-app.get('/resenas/videojuego/:videojuegoId', (req, res) => {
+// GET /resenas/videojuego/:nombre → reseñas de un videojuego buscando por nombre
+// Primero localiza el juego, luego filtra las reseñas por su id
+app.get('/resenas/videojuego/:nombre', (req, res) => {
   try {
-    const videojuegoId = parseInt(req.params.videojuegoId);
-    // filter devuelve todos los elementos que cumplan la condición, no solo el primero
-    const resenasFiltradas = reseñas.filter(r => r.videojuegoId === videojuegoId);
+    const nombre = req.params.nombre;
+    const juego = videojuegos.find(v => v.nombre.toLowerCase().includes(nombre.toLowerCase()));
+    if (!juego) {
+      return res.status(404).json({ error: 'No se encontró ningún videojuego con ese nombre' });
+    }
+    const resenasFiltradas = reseñas.filter(r => r.videojuegoId === juego.id);
     if (resenasFiltradas.length === 0) {
-      return res.status(404).json({ error: 'No se encontraron reseñas para ese videojuego' });
+      return res.status(404).json({ error: 'Este videojuego no tiene reseñas' });
     }
     res.status(200).json(resenasFiltradas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// POST /resenas → crea una nueva reseña
+// videojuegoId, autor, comentario y nota son obligatorios
+app.post('/resenas', (req, res) => {
+  try {
+    const { videojuegoId, autor, comentario, nota, fecha } = req.body;
+
+    if (!videojuegoId || !autor || !comentario || !nota) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios: videojuegoId, autor, comentario y nota' });
+    }
+
+    const nuevaResena = {
+      id: reseñas[reseñas.length - 1].id + 1,
+      videojuegoId,
+      autor,
+      comentario,
+      nota,
+      fecha: fecha || new Date().toLocaleDateString('es-ES')
+    };
+
+    reseñas.push(nuevaResena);
+    res.status(201).json(nuevaResena);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// DELETE /resenas/:id → elimina una reseña
+app.delete('/resenas/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const index = reseñas.findIndex(r => r.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Reseña no encontrada' });
+    }
+    reseñas.splice(index, 1);
+    res.status(200).json({ mensaje: `Reseña con id ${id} eliminada correctamente` });
   } catch (error) {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
