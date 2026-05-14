@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 // ENDPOINTS - VIDEOJUEGOS
 // ─────────────────────────────────────────────
 
-// GET /videojuegos → devuelve todos
+// Devuelve todos los videojuegos
 app.get('/videojuegos', (req, res) => {
   try {
     res.status(200).json(videojuegos);
@@ -93,8 +93,8 @@ app.get('/videojuegos', (req, res) => {
   }
 });
 
-// GET /videojuegos/:id → devuelve uno por id
-// parseInt porque req.params devuelve string
+// Busca un videojuego por id
+// Convertimos a número porque la URL siempre envía texto
 app.get('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -108,8 +108,8 @@ app.get('/videojuegos/:id', (req, res) => {
   }
 });
 
-// GET /videojuegos/buscar/nombre?nombre=... → búsqueda parcial por nombre
-// Va antes que /:id para que Express no confunda "buscar" con un id
+// Busca por nombre con query param
+// Esta ruta va aquí porque si va después de :id, Express se confunde
 app.get('/videojuegos/buscar/nombre', (req, res) => {
   try {
     const nombre = req.query.nombre;
@@ -128,8 +128,25 @@ app.get('/videojuegos/buscar/nombre', (req, res) => {
   }
 });
 
-// POST /videojuegos → añade un videojuego nuevo
-// nombre, genero, plataforma y estudio son obligatorios
+// Filtra videojuegos por disponibilidad
+// Si pasas ?disponible=true devuelve los disponibles, si pasas false devuelve los no disponibles
+app.get('/videojuegos/filtrar/disponible', (req, res) => {
+  try {
+    const disponible = req.query.disponible === 'true';
+    const juegosFiltrados = videojuegos.filter(v => v.disponible === disponible);
+    
+    if (juegosFiltrados.length === 0) {
+      return res.status(404).json({ error: 'No se encontraron videojuegos con ese criterio' });
+    }
+    res.status(200).json(juegosFiltrados);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Crea un videojuego nuevo
+// Los campos obligatorios son nombre, genero, plataforma y estudio
+// El resto pueden ser null si no los envías
 app.post('/videojuegos', (req, res) => {
   try {
     const { nombre, genero, plataforma, estudio, fechaLanzamiento, precio, puntuacion, disponible } = req.body;
@@ -157,7 +174,8 @@ app.post('/videojuegos', (req, res) => {
   }
 });
 
-// PUT /videojuegos/:id → actualiza los campos que lleguen en el body
+// Modifica un videojuego que ya existe
+// Solo cambia los campos que le envíes, el resto se mantienen como estaban
 app.put('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -172,7 +190,7 @@ app.put('/videojuegos/:id', (req, res) => {
   }
 });
 
-// DELETE /videojuegos/:id → elimina el videojuego del array
+// Elimina un videojuego del array
 app.delete('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -191,7 +209,7 @@ app.delete('/videojuegos/:id', (req, res) => {
 // ENDPOINTS - RESEÑAS
 // ─────────────────────────────────────────────
 
-// GET /resenas → devuelve todas
+// Devuelve todas las reseñas
 app.get('/resenas', (req, res) => {
   try {
     res.status(200).json(reseñas);
@@ -200,7 +218,7 @@ app.get('/resenas', (req, res) => {
   }
 });
 
-// GET /resenas/:id → devuelve una por id
+// Busca una reseña por id
 app.get('/resenas/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -214,8 +232,8 @@ app.get('/resenas/:id', (req, res) => {
   }
 });
 
-// GET /resenas/videojuego/:nombre → reseñas de un videojuego buscando por nombre
-// Primero localiza el juego, luego filtra las reseñas por su id
+// Devuelve las reseñas de un videojuego buscando por nombre
+// Primero encuentra el juego, luego busca todas sus reseñas
 app.get('/resenas/videojuego/:nombre', (req, res) => {
   try {
     const nombre = req.params.nombre;
@@ -233,8 +251,9 @@ app.get('/resenas/videojuego/:nombre', (req, res) => {
   }
 });
 
-// POST /resenas → crea una nueva reseña
+// Crea una nueva reseña
 // videojuegoId, autor, comentario y nota son obligatorios
+// Si no envías fecha, se genera automáticamente con la de hoy
 app.post('/resenas', (req, res) => {
   try {
     const { videojuegoId, autor, comentario, nota, fecha } = req.body;
@@ -259,7 +278,7 @@ app.post('/resenas', (req, res) => {
   }
 });
 
-// DELETE /resenas/:id → elimina una reseña
+// Elimina una reseña por id
 app.delete('/resenas/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
