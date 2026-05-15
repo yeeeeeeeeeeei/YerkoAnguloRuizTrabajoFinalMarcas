@@ -1,0 +1,19 @@
+info:
+  name: ordenar descendente
+  type: http
+  seq: 10
+
+http:
+  method: GET
+  url: http://localhost:3000/videojuegos/ordenar/puntuacion?direccion=desc
+  params:
+    - name: direccion
+      value: desc
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

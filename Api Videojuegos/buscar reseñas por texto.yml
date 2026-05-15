@@ -1,0 +1,19 @@
+info:
+  name: buscar reseñas por texto
+  type: http
+  seq: 11
+
+http:
+  method: GET
+  url: http://localhost:3000/resenas/buscar?texto=adictivo
+  params:
+    - name: texto
+      value: adictivo
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

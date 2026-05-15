@@ -1,0 +1,22 @@
+info:
+  name: filtrar por precio
+  type: http
+  seq: 9
+
+http:
+  method: GET
+  url: http://localhost:3000/videojuegos/filtrar/precio?precioMin=10&precioMax=50
+  params:
+    - name: precioMin
+      value: "10"
+      type: query
+    - name: precioMax
+      value: "50"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
