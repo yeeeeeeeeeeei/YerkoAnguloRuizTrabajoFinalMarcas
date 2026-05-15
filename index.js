@@ -234,6 +234,58 @@ app.get('/videojuegos/ordenar/puntuacion', (req, res) => {
   }
 });
 
+// GET /videojuegos/stats/media → calcula la media de puntuación
+app.get('/videojuegos/stats/media', (req, res) => {
+  try {
+    if (videojuegos.length === 0) {
+      return res.status(404).json({ error: 'No hay videojuegos para calcular' });
+    }
+    const sumaPuntuaciones = videojuegos.reduce((suma, v) => suma + v.puntuacion, 0);
+    const media = sumaPuntuaciones / videojuegos.length;
+    res.status(200).json({ media: media.toFixed(2), totalVideojuegos: videojuegos.length });
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// GET /videojuegos/stats/extremos → devuelve máximo y mínimo de puntuación
+app.get('/videojuegos/stats/extremos', (req, res) => {
+  try {
+    if (videojuegos.length === 0) {
+      return res.status(404).json({ error: 'No hay videojuegos para calcular' });
+    }
+    const puntuaciones = videojuegos.map(v => v.puntuacion);
+    const maximo = Math.max(...puntuaciones);
+    const minimo = Math.min(...puntuaciones);
+    res.status(200).json({ maximo, minimo });
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// GET /videojuegos/stats/top?n=... → devuelve los N videojuegos con mayor puntuación
+app.get('/videojuegos/stats/top', (req, res) => {
+  try {
+    const n = req.query.n ? parseInt(req.query.n) : 3;
+    const top = [...videojuegos].sort((a, b) => b.puntuacion - a.puntuacion).slice(0, n);
+    res.status(200).json(top);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// GET /stats/totales → devuelve el total de registros de cada recurso
+app.get('/stats/totales', (req, res) => {
+  try {
+    res.status(200).json({
+      totalVideojuegos: videojuegos.length,
+      totalResenas: reseñas.length
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ─────────────────────────────────────────────
 // ENDPOINTS - RESEÑAS
 // ─────────────────────────────────────────────
