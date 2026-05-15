@@ -1,14 +1,14 @@
 const express = require('express');
- 
+
 const app = express();
 const PORT = 3000;
- 
+
 app.use(express.json());
- 
+
 // ─────────────────────────────────────────────
 // DATOS EN MEMORIA
 // ─────────────────────────────────────────────
- 
+
 const videojuegos = [
   {
     id: 1,
@@ -44,7 +44,7 @@ const videojuegos = [
     disponible: true
   }
 ];
- 
+
 const reseñas = [
   {
     id: 1,
@@ -71,20 +71,20 @@ const reseñas = [
     fecha: '05-03-2026'
   }
 ];
- 
+
 // ─────────────────────────────────────────────
 // RUTA PRINCIPAL
 // ─────────────────────────────────────────────
- 
+
 app.get('/', (req, res) => {
   res.status(200).send('Servidor funcionando correctamente');
 });
- 
+
 // ─────────────────────────────────────────────
 // ENDPOINTS - VIDEOJUEGOS
 // ─────────────────────────────────────────────
- 
-// Devuelve todos los videojuegos
+
+// GET /videojuegos → devuelve todos los videojuegos
 app.get('/videojuegos', (req, res) => {
   try {
     res.status(200).json(videojuegos);
@@ -92,9 +92,8 @@ app.get('/videojuegos', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Busca un videojuego por id
-// Convertimos a número porque la URL siempre envía texto
+
+// GET /videojuegos/:id → busca un videojuego por id
 app.get('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -107,9 +106,8 @@ app.get('/videojuegos/:id', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Busca por nombre con query param
-// Esta ruta va aquí porque si va después de :id, Express se confunde
+
+// GET /videojuegos/buscar/nombre?nombre=... → búsqueda por nombre
 app.get('/videojuegos/buscar/nombre', (req, res) => {
   try {
     const nombre = req.query.nombre;
@@ -127,71 +125,16 @@ app.get('/videojuegos/buscar/nombre', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Filtra videojuegos por disponibilidad
-// Si pasas ?disponible=true devuelve los disponibles, si pasas false devuelve los no disponibles
-app.get('/videojuegos/filtrar/disponible', (req, res) => {
-  try {
-    const disponible = req.query.disponible === 'true';
-    const juegosFiltrados = videojuegos.filter(v => v.disponible === disponible);
-    
-    if (juegosFiltrados.length === 0) {
-      return res.status(404).json({ error: 'No se encontraron videojuegos con ese criterio' });
-    }
-    res.status(200).json(juegosFiltrados);
-  } catch (error) {
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
- 
-// Filtra videojuegos por rango de precio
-// Puedes usar ?precioMin=10 o ?precioMax=60 o ambos ?precioMin=10&precioMax=60
-app.get('/videojuegos/filtrar/precio', (req, res) => {
-  try {
-    let precioMin = req.query.precioMin ? parseFloat(req.query.precioMin) : 0;
-    let precioMax = req.query.precioMax ? parseFloat(req.query.precioMax) : Infinity;
- 
-    const juegosFiltrados = videojuegos.filter(v => v.precio >= precioMin && v.precio <= precioMax);
- 
-    if (juegosFiltrados.length === 0) {
-      return res.status(404).json({ error: 'No se encontraron videojuegos en ese rango de precio' });
-    }
-    res.status(200).json(juegosFiltrados);
-  } catch (error) {
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
- 
-// Ordena videojuegos por puntuación
-// Usa ?direccion=asc para ascendente o ?direccion=desc para descendente
-app.get('/videojuegos/ordenar/puntuacion', (req, res) => {
-  try {
-    const direccion = req.query.direccion || 'desc';
-    const juegosOrdenados = [...videojuegos];
- 
-    if (direccion === 'asc') {
-      juegosOrdenados.sort((a, b) => a.puntuacion - b.puntuacion);
-    } else {
-      juegosOrdenados.sort((a, b) => b.puntuacion - a.puntuacion);
-    }
- 
-    res.status(200).json(juegosOrdenados);
-  } catch (error) {
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
- 
-// Crea un videojuego nuevo
-// Los campos obligatorios son nombre, genero, plataforma y estudio
-// El resto pueden ser null si no los envías
+
+// POST /videojuegos → crea un videojuego nuevo
 app.post('/videojuegos', (req, res) => {
   try {
     const { nombre, genero, plataforma, estudio, fechaLanzamiento, precio, puntuacion, disponible } = req.body;
- 
+
     if (!nombre || !genero || !plataforma || !estudio) {
       return res.status(400).json({ error: 'Faltan campos obligatorios: nombre, genero, plataforma y estudio' });
     }
- 
+
     const nuevoJuego = {
       id: videojuegos[videojuegos.length - 1].id + 1,
       nombre,
@@ -203,16 +146,15 @@ app.post('/videojuegos', (req, res) => {
       puntuacion: puntuacion || null,
       disponible: disponible !== undefined ? disponible : true
     };
- 
+
     videojuegos.push(nuevoJuego);
     res.status(201).json(nuevoJuego);
   } catch (error) {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Modifica un videojuego que ya existe
-// Solo cambia los campos que le envíes, el resto se mantienen como estaban
+
+// PUT /videojuegos/:id → modifica un videojuego existente
 app.put('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -226,8 +168,8 @@ app.put('/videojuegos/:id', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Elimina un videojuego del array
+
+// DELETE /videojuegos/:id → elimina un videojuego
 app.delete('/videojuegos/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -241,12 +183,62 @@ app.delete('/videojuegos/:id', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
+
+// GET /videojuegos/filtrar/disponible?disponible=... → filtra por disponibilidad
+app.get('/videojuegos/filtrar/disponible', (req, res) => {
+  try {
+    const disponible = req.query.disponible === 'true';
+    const juegosFiltrados = videojuegos.filter(v => v.disponible === disponible);
+    
+    if (juegosFiltrados.length === 0) {
+      return res.status(404).json({ error: 'No se encontraron videojuegos con ese criterio' });
+    }
+    res.status(200).json(juegosFiltrados);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// GET /videojuegos/filtrar/precio?precioMin=...&precioMax=... → filtra por rango de precio
+app.get('/videojuegos/filtrar/precio', (req, res) => {
+  try {
+    let precioMin = req.query.precioMin ? parseFloat(req.query.precioMin) : 0;
+    let precioMax = req.query.precioMax ? parseFloat(req.query.precioMax) : Infinity;
+
+    const juegosFiltrados = videojuegos.filter(v => v.precio >= precioMin && v.precio <= precioMax);
+
+    if (juegosFiltrados.length === 0) {
+      return res.status(404).json({ error: 'No se encontraron videojuegos en ese rango de precio' });
+    }
+    res.status(200).json(juegosFiltrados);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// GET /videojuegos/ordenar/puntuacion?direccion=... → ordena por puntuación
+app.get('/videojuegos/ordenar/puntuacion', (req, res) => {
+  try {
+    const direccion = req.query.direccion || 'desc';
+    const juegosOrdenados = [...videojuegos];
+
+    if (direccion === 'asc') {
+      juegosOrdenados.sort((a, b) => a.puntuacion - b.puntuacion);
+    } else {
+      juegosOrdenados.sort((a, b) => b.puntuacion - a.puntuacion);
+    }
+
+    res.status(200).json(juegosOrdenados);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // ─────────────────────────────────────────────
 // ENDPOINTS - RESEÑAS
 // ─────────────────────────────────────────────
- 
-// Devuelve todas las reseñas
+
+// GET /resenas → devuelve todas las reseñas
 app.get('/resenas', (req, res) => {
   try {
     res.status(200).json(reseñas);
@@ -254,8 +246,8 @@ app.get('/resenas', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Busca una reseña por id
+
+// GET /resenas/:id → busca una reseña por id
 app.get('/resenas/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -268,9 +260,8 @@ app.get('/resenas/:id', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Devuelve las reseñas de un videojuego buscando por nombre
-// Primero encuentra el juego, luego busca todas sus reseñas
+
+// GET /resenas/videojuego/:nombre → devuelve reseñas de un videojuego por nombre
 app.get('/resenas/videojuego/:nombre', (req, res) => {
   try {
     const nombre = req.params.nombre;
@@ -287,9 +278,48 @@ app.get('/resenas/videojuego/:nombre', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Busca reseñas por texto en el comentario
-// Ejemplo: /resenas/buscar?texto=adictivo
+
+// POST /resenas → crea una nueva reseña
+app.post('/resenas', (req, res) => {
+  try {
+    const { videojuegoId, autor, comentario, nota, fecha } = req.body;
+
+    if (!videojuegoId || !autor || !comentario || !nota) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios: videojuegoId, autor, comentario y nota' });
+    }
+
+    const nuevaResena = {
+      id: reseñas[reseñas.length - 1].id + 1,
+      videojuegoId,
+      autor,
+      comentario,
+      nota,
+      fecha: fecha || new Date().toLocaleDateString('es-ES')
+    };
+
+    reseñas.push(nuevaResena);
+    res.status(201).json(nuevaResena);
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// DELETE /resenas/:id → elimina una reseña
+app.delete('/resenas/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const index = reseñas.findIndex(r => r.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Reseña no encontrada' });
+    }
+    reseñas.splice(index, 1);
+    res.status(200).json({ mensaje: `Reseña con id ${id} eliminada correctamente` });
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// GET /resenas/buscar?texto=... → busca reseñas por texto en comentarios
 app.get('/resenas/buscar', (req, res) => {
   try {
     const texto = req.query.texto;
@@ -307,53 +337,11 @@ app.get('/resenas/buscar', (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
- 
-// Crea una nueva reseña
-// videojuegoId, autor, comentario y nota son obligatorios
-// Si no envías fecha, se genera automáticamente con la de hoy
-app.post('/resenas', (req, res) => {
-  try {
-    const { videojuegoId, autor, comentario, nota, fecha } = req.body;
- 
-    if (!videojuegoId || !autor || !comentario || !nota) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios: videojuegoId, autor, comentario y nota' });
-    }
- 
-    const nuevaResena = {
-      id: reseñas[reseñas.length - 1].id + 1,
-      videojuegoId,
-      autor,
-      comentario,
-      nota,
-      fecha: fecha || new Date().toLocaleDateString('es-ES')
-    };
- 
-    reseñas.push(nuevaResena);
-    res.status(201).json(nuevaResena);
-  } catch (error) {
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
- 
-// Elimina una reseña por id
-app.delete('/resenas/:id', (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const index = reseñas.findIndex(r => r.id === id);
-    if (index === -1) {
-      return res.status(404).json({ error: 'Reseña no encontrada' });
-    }
-    reseñas.splice(index, 1);
-    res.status(200).json({ mensaje: `Reseña con id ${id} eliminada correctamente` });
-  } catch (error) {
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
- 
+
 // ─────────────────────────────────────────────
 // ARRANQUE DEL SERVIDOR
 // ─────────────────────────────────────────────
- 
+
 app.listen(PORT, () => {
   console.log(`Servidor iniciado en http://localhost:${PORT}`);
 });
